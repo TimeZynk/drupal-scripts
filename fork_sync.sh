@@ -2,47 +2,52 @@
 
 # Kills all spawned jobs
 function killJobs {
-    jobs
     kill -TERM $(jobs -p)
+    FINISH=$(date +%s)
+    echo "Synchronization killed after" $(( FINISH - START )) "seconds"
     exit 1
 }
 
 function runDrupalSync {
     users=$1
-    uri=$2
-    for user in ${users//,/ } ; do
-	echo "Synching user ${user} @ $uri"
-	# Replace w. call to drupal sync..
-	sleep 3
-    done
+    now=$(date +%s)
+    if ! $DRUSH_CMD intellitime-sync "$users"; then
+		echo "  synchronization command failed!"
+    fi
 }
 
 # Otherwise we will be doing string conversion.
 function sync {
     users="$1"
-    uri="$2" 
+    nbr_of_threads=0
     # TODO: Check users for empty..
     for user_set in ${users//;/ } ; do 
-	echo "User set: $user_set"
-	runDrupalSync "$user_set" "$uri" &
+        runDrupalSync "$user_set" &
+        (( nbr_of_threads++ ))
     done
+    echo "  started $nbr_of_threads threads"
 }
 
 # Main body
-if [ $# -ne 1 ] ; then
-    echo "Usage: $0 site-URI"
+if [ $# -ne 2 ] ; then
+    echo "Usage: $0 drupal-root site-URI"
     exit 2
 fi
 
-echo "Entering sync paralleliser"
+START=$(date +%s)
+echo "Starting sync in $1 for $2"
 
 ## Register a trap function to kill all spawned jobs.
 trap killJobs INT
 trap killJobs TERM
 
+DRUSH_CMD="drush -r $1 -l $2"
+
 # TODO: fetch users from drupal.
-users="1,2,3,4,5,6,7,8,9;10,11,12,13,14,15,16;23,41,8438"
-sync "${users}" "$1"
+users=$($DRUSH_CMD intellitime-partition)
+sync "${users}"
 
 ## Wait for all children. We rely on our parent to kill us if need be.
 wait
+FINISH=$(date +%s)
+echo "Synchronization finished in" $(( FINISH - START )) "seconds"
