@@ -12,7 +12,7 @@ syncSite() {
 	enabled=$($DRUSH -l "$site" php-eval 'print(module_exists("tzintellitime"));')
 	if [ "x$enabled" = "x1" ]; then
 		echo "Checking $site: enabled"
-		nice ./fork_sync.sh "$DRUPAL_ROOT" "$site"
+		nice "$CALL_ROOT/fork_sync.sh" "$DRUPAL_ROOT" "$site"
 	else
 		echo "Checking $site: disabled"
 	fi
@@ -23,6 +23,7 @@ if [ $# -ne 2 ] || [ $2 -lt 0 ]; then
 	exit 2
 fi
 
+export CALL_ROOT=$(dirname "$0")
 export DRUPAL_ROOT="$1"
 export DRUSH="drush -r $DRUPAL_ROOT"
 TIMEOUT="$2"
