@@ -27,7 +27,7 @@ setUp() {
 	echo "Users: $users"
 	for user in $users ; do
 		${DRUSH} intellitime-mock-add-report $user $ASS 2010 12 05 08:00 16:30 30 comment &
-		${DRUSH} intellitime-mock-add-report $user $ASS 2010 12 06 08:00 16:30 30 another comment &
+		${DRUSH} intellitime-mock-add-report $user 'leave' 2010 12 06 08:00 16:30 30 another comment &
 	done
 	wait
 }

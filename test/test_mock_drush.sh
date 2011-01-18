@@ -29,5 +29,12 @@ testAddReport() {
 	assertEquals 'single report' "$RID $USER_ID $AID 2010-12-05 08:00 16:30 30 'comment with spaces'" "${ALL_REPORTS}"
 }
 
+testAddReportWithoutAssignment() {
+	USER_ID=$(${DRUSH} intellitime-mock-add-user 'kalle' 'kallepw')
+	RID=$(${DRUSH} intellitime-mock-add-report $USER_ID title 2010 12 05 08:00 16:30 30 comment with spaces)
+	assertTrue 'RID not zero' "[ 0 -lt $RID ]"
+	ALL_REPORTS=$(${DRUSH} intellitime-mock-list-reports)
+	assertEquals 'single report' "$RID $USER_ID 'title' 2010-12-05 08:00 16:30 30 'comment with spaces'" "${ALL_REPORTS}"
+}
 
 source ../../../external/shunit/src/shell/shunit2
