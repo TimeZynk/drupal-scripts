@@ -3,6 +3,8 @@
 drupal_root="${PWD}/../../htdocs"
 DRUSH="drush -r ${drupal_root}"
 
+delay=20
+
 setUp() {
 	${DRUSH} intellitime-mock-reset-all
 	${DRUSH} vset --yes tzintellitime_mock_delay_millis 0 &
@@ -56,15 +58,15 @@ testMultiThreadSyncFromMock() {
 
 function assert_successful_sync() {
     partition=$1
-    query="SELECT COUNT(DISTINCT nid) FROM tzreport WHERE flags != 255 AND (assignedto = "
-    query+="${partition//[,;]/ OR assignedto = })"
+    query="SELECT COUNT(n.nid) FROM node n INNER JOIN tzreport t ON n.vid = t.vid WHERE t.flags != 255 AND (t.assignedto = "
+    query+="${partition//[,;]/ OR t.assignedto = })"
 
     drupal_users="${partition//[,;]/ }"
     assertEquals 'must have 10 users' 10 $(echo ${drupal_users} | wc -w) || return
 
     assert_report_count "$query" 0
 
-    ${DRUSH} vset --yes tzintellitime_mock_delay_millis 400
+    ${DRUSH} vset --yes tzintellitime_mock_delay_millis "$delay"
     run_sync
     
     assert_report_count "$query" 20
