@@ -12,7 +12,7 @@ setUp() {
 	${DRUSH} vset --yes tzintellitime_mock_enable_comments 1 &
 	tmp_url=$(${DRUSH} vget tzintellitime_base_url)
 	old_base_url=${tmp_url/tzintellitime_base_url: /}
-	${DRUSH} vset --yes tzintellitime_base_url "http://localhost/IntelliplanWeb/Portal/Login.aspx" &
+	${DRUSH} vset --yes tzintellitime_base_url "http://localhost/demo/v2005/Portal/Login.aspx" &
 
 	# Disable any existing users scheduled by live module...(Not needed when site is cleaned between test runs.)
 	${DRUSH} intellitime-set-all-active 0 &
