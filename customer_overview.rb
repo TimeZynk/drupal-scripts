@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 
-
 require 'yajl'
 require 'optparse'
 
@@ -27,12 +26,13 @@ end
 
 optparse.parse!
 
-if not File.directory?(options[:drupal_root] + '/sites')
+if not options[:drupal_root] or not File.directory?(options[:drupal_root] + '/sites')
   puts "invalid drupal root: #{options[:drupal_root]}\n" << optparse.help
   exit
 end
 
 class Stats
+  GREY = -10
   RED = 0
   YELLOW = 10
   GREEN = 20
@@ -40,13 +40,16 @@ class Stats
   attr_accessor :red, :yellow, :green
   def initialize(name)
     @name = name
+    @grey = 0
     @red = 0
     @yellow = 0
     @green = 0
   end
   
   def add(status)
-    if status == RED
+    if status == GREY
+      @grey += 1
+    elsif status == RED
       @red += 1
     elsif status == YELLOW
       @yellow += 1
@@ -56,8 +59,8 @@ class Stats
   end
   
   def to_html
-    sum = @red + @yellow + @green
-    %Q|<tr><td class="name">#{@name}</td><td class="number">#{@red}</td><td class="number">#{@yellow}</td><td class="number">#{@green}</td><td class="number">#{sum}</td></tr>|
+    sum = @grey + @red + @yellow + @green
+    %Q|<tr><td class="name">#{@name}</td><td class="number">#{@grey}</td><td class="number">#{@red}</td><td class="number">#{@yellow}</td><td class="number">#{@green}</td><td class="number">#{sum}</td></tr>|
   end
 end
 
@@ -86,7 +89,7 @@ endofstyle
 
 puts "<html><head><title>#{title}</title><style>#{style}</style></head><body>"
 puts "<h1>#{title}</h1>"
-puts "<table><thead><th>Customer</th><th>Red</th><th>Yellow</th><th>Green</th><th>Total</th></thead>"
+puts "<table><thead><th>Customer</th><th>Grey</th><th>Red</th><th>Yellow</th><th>Green</th><th>Total</th></thead>"
 puts "<tbody>"
 
 # Look through drupal root
