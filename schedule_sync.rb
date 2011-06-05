@@ -38,7 +38,6 @@ class Scanner
 
 
   def drush(site, command)
-    puts "#{site}: running #{command}"
     output = %x<drush "--root=#{@options[:drupal_root]}" "--uri=#{site}" #{command}>
     output.strip
   end
@@ -55,7 +54,6 @@ class Scanner
     intelliplan_enabled = drush site, "php-eval 'print(module_exists(\"tzintellitime\"));'"
     return unless intelliplan_enabled === '1'
 
-    puts site + ': enabled'
     sync_partition = drush site, 'intellitime-partition'
     pending_users = sync_partition.split ';'
     pending_users.each do |users|
