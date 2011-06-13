@@ -63,7 +63,11 @@ class Scanner
 
   def schedule_sync(site, users)
     puts site + ': scheduling users ' + users.join(', ')
-    Stalker.enqueue 'intellitime.sync', :root => @options[:drupal_root], :site => site, :users => users
+    Stalker.enqueue 'intellitime.sync', {
+        :root => @options[:drupal_root], :site => site, :users => users
+      }, {
+        :ttr => 360
+      }
   end
 
 end
