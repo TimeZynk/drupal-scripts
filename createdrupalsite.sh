@@ -28,7 +28,7 @@ TEMPLATE=`find . -name default.settings.php | head -n1`
 mkdir "$HOST"
 
 # Find line number of db settings in template
-TEMPLATELINES=`wc "$TEMPLATE" | cut -f2 -d' '`
+TEMPLATELINES=`wc -l < "$TEMPLATE"`
 DBLINE=`grep -n '^$db_url = ' "$TEMPLATE" | cut -f1 -d:`
 head -n $(($DBLINE - 1)) "$TEMPLATE" > "$HOST"/settings.php
 echo "\$db_url = 'mysqli://$PREFIX:$PASSWORD@localhost/$PREFIX';" >> "$HOST"/settings.php
