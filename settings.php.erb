@@ -258,3 +258,11 @@ ini_set('url_rewriter.tags',        '');
 #   'forum'      => 'Discussion board',
 #   '@count min' => '@count minutes',
 # );
+
+/** Memcached */
+$conf['cache_inc'] = './sites/all/modules/contrib/memcache/memcache.inc';
+$conf['memcache_key_prefix'] = '<%= site_prefix %>';
+$conf['memcache_options'] = array(
+  Memcached::OPT_BINARY_PROTOCOL => TRUE,
+  Memcached::OPT_SERIALIZER => Memcached::SERIALIZER_IGBINARY,
+);
