@@ -38,7 +38,7 @@ class Scanner
 
 
   def drush(site, command)
-    output = %x<drush "--root=#{@options[:drupal_root]}" "--uri=#{site}" #{command} 2>&1>
+    output = %x(drush "--root=#{@options[:drupal_root]}" "--uri=#{site}" #{command} 2>&1)
     if $? == 0
       output.strip
     else
