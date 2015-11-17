@@ -61,17 +61,18 @@ class Scanner
 
     sync_partition = drush site, 'intellitime-partition'
     pending_users = sync_partition.split ';'
-    pending_users.each do |users|
-      schedule_sync site, users.split(',')
+    pending_users.each_with_index do |users, index|
+      schedule_sync site, users.split(','), 100 + index
     end
   end
 
-  def schedule_sync(site, users)
-    puts site + ': scheduling users ' + users.join(', ')
+  def schedule_sync(site, users, prio)
+    puts site + ': scheduling users ' + users.join(', ') + ' with prio ' + prio.to_s
     Stalker.enqueue 'intellitime.sync', {
         :root => @options[:drupal_root], :site => site, :users => users
       }, {
-        :ttr => 360
+        :ttr => 360,
+        :pri => prio
       }
   end
 
