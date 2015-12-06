@@ -9,7 +9,7 @@ $child = nil
 
 job 'intellitime.sync' do |args|
   now = Time.now.to_f
-  puts "Idle for " + (now - $last_run).to_s + " seconds"
+  printf("Idle for %d seconds", (now - $last_run))
 
   users = args['users'].join(',')
   $child = spawn('drush', "--root=#{args['root']}", "--uri=#{args['site']}", 'intellitime-sync', "#{users}")
@@ -31,7 +31,7 @@ error do |e, job, args|
   if $child.nil?
     exit
   else
-    puts "Sending SIGTERM to " + $child
+    printf("Sending SIGTERM to %d", $child)
     Process::kill("TERM", $child)
     begin
       Timeout::timeout(5) do
@@ -40,7 +40,7 @@ error do |e, job, args|
       end
     rescue Timeout::Error
       unless $child.nil?
-        puts "Sending SIGKILL to " + $child
+        printf("Sending SIGKILL to %d", $child)
         Process.kill("KILL", $child)
         Process::wait($child)
       end
