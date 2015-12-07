@@ -20,6 +20,11 @@ class Scanner
         @options[:site_suffix] = suffix
       end
 
+      @options[:ttr] = 300
+      opts.on('-t', '--ttr TTR', 'Time before timeout in seconds, default 300 s') do |ttr|
+        @options[:ttr] = ttr.to_i
+      end
+
       opts.on('-h', '--help', 'Display this screen') do
         puts opts
         return false
@@ -71,7 +76,7 @@ class Scanner
     Stalker.enqueue 'intellitime.sync', {
         :root => @options[:drupal_root], :site => site, :users => users
       }, {
-        :ttr => 180,
+        :ttr => @options[:ttr],
         :delay => delay
       }
   end
