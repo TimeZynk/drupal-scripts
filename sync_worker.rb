@@ -9,7 +9,11 @@ $child = nil
 
 job 'intellitime.sync' do |args|
   now = Time.now.to_f
-  printf("Idle for %d seconds\n", (now - $last_run))
+  printf(
+    "Idle for %d seconds. Job age %d seconds.\n",
+    (now - $last_run),
+    (now - (args['ts'] || now))
+  )
 
   users = args['users'].join(',')
   $child = spawn('drush', "--root=#{args['root']}", "--uri=#{args['site']}", 'intellitime-sync', "#{users}")

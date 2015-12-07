@@ -74,7 +74,10 @@ class Scanner
   def schedule_sync(site, users, delay)
     puts site + ': scheduling users ' + users.join(', ') + ' with delay ' + delay.to_s + 's'
     Stalker.enqueue 'intellitime.sync', {
-        :root => @options[:drupal_root], :site => site, :users => users
+        :root => @options[:drupal_root],
+        :site => site,
+        :users => users,
+        :ts => Time.now.to_i
       }, {
         :ttr => @options[:ttr],
         :delay => delay
