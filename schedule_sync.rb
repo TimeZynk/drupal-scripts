@@ -1,7 +1,9 @@
 #!/usr/bin/env ruby
 
 require 'optparse'
-require 'stalker'
+require 'beanstalk-client'
+require 'uri'
+require 'json'
 
 class Scanner
   def parse_options
@@ -41,6 +43,15 @@ class Scanner
     return true
   end
 
+  def connect
+    beanstalk_url = ENV['BEANSTALK_URL'] || 'beanstalk://localhost/'
+    uri = URI.parse(beanstalk_url)
+    host_and_port = "#{uri.host}:#{uri.port || 11300}"
+
+    @beanstalk = Beanstalk::Pool.new([host_and_port])
+    @beanstalk.use('intellitime.sync')
+    @beanstalk
+  end
 
   def drush(site, command)
     output = %x(drush "--root=#{@options[:drupal_root]}" "--uri=#{site}" #{command} 2>&1)
@@ -73,19 +84,25 @@ class Scanner
 
   def schedule_sync(site, users, delay)
     puts site + ': scheduling users ' + users.join(', ') + ' with delay ' + delay.to_s + 's'
-    Stalker.enqueue 'intellitime.sync', {
-        :root => @options[:drupal_root],
-        :site => site,
-        :users => users,
-        :ts => Time.now.to_i
-      }, {
-        :ttr => @options[:ttr],
-        :delay => delay
-      }
+    @beanstalk.put(
+      [
+        'intellitime.sync',
+        {
+          :root => @options[:drupal_root],
+          :site => site,
+          :users => users,
+          :ts => Time.now.to_i
+        }
+      ].to_json,
+      65536,
+      delay,
+      @options[:ttr]
+    )
   end
 
 end
 
 scanner = Scanner.new
 exit unless scanner.parse_options
+exit unless scanner.connect
 scanner.check_pending_sync
