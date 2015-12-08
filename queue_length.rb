@@ -29,7 +29,7 @@ pool = Beanstalk::Pool.new([host_and_port])
 
 stats = pool.stats_tube('intellitime.sync')
 printf(
-    "Beanstalk STATS Ready: %d,\t Reserved: %d,\t Delayed: %d\n",
+    "Beanstalk STATS Ready: %d,\tReserved: %d,\tDelayed: %d",
     stats["current-jobs-ready"],
     stats["current-jobs-reserved"],
     stats["current-jobs-delayed"]
@@ -37,9 +37,11 @@ printf(
 
 if stats["current-jobs-ready"] > options[:limit]
     printf(
-        "Beanstalk STATS Ready: %d,\t Exceeds limit: %d\n",
+        "\tExceeds limit: %d\n",
         stats["current-jobs-ready"],
         options[:limit]
     )
     exit 1
+else
+    printf("\n")
 end
