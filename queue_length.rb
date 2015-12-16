@@ -39,9 +39,9 @@ printf(
 
 begin
   prometheus = Prometheus::Client.registry
-  jobs_ready = prometheus.gauge(:current_jobs_ready)
-  jobs_reserved = prometheus.gauge(:current_jobs_reserved)
-  total_jobs = prometheus.gauge(:total_jobs)
+  jobs_ready = prometheus.gauge(:current_jobs_ready, 'Number of jobs ready to be processed')
+  jobs_reserved = prometheus.gauge(:current_jobs_reserved, 'Number of jobs currently processing')
+  total_jobs = prometheus.gauge(:total_jobs, 'Total number of jobs processed')
   jobs_ready.set({tube: 'intellitime.sync'}, stats["current-jobs-ready"])
   jobs_reserved.set({tube: 'intellitime.sync'}, stats["current-jobs-reserved"])
   total_jobs.set({tube: 'intellitime.sync'}, stats["total-jobs"])

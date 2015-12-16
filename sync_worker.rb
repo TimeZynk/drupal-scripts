@@ -10,21 +10,21 @@ $last_run = Time.now.to_f
 $child = nil
 
 $prometheus = Prometheus::Client.registry
-$idle_seconds = $prometheus.counter(:idle_seconds)
-$job_age = $prometheus.gauge(:job_age_seconds)
-$synced_users = $prometheus.counter(:synchronized_users)
-$timeouts = $prometheus.counter(:timeouts)
+$idle_seconds = $prometheus.counter(:idle_seconds, 'Number of idle seconds between jobs')
+$job_age = $prometheus.gauge(:job_age_seconds, 'Age of current job')
+$synced_users = $prometheus.counter(:synchronized_users, 'Number of synchronized_users')
+$timeouts = $prometheus.counter(:timeouts, 'Number of timeouts')
 $pushgateway = Prometheus::Client::Push.new('sync-worker', ENV['WORKER_NAME'], ENV['PUSHGATEWAY_URL'] || 'http://pushgateway:9091')
 
 job 'intellitime.sync' do |args|
   now = Time.now.to_f
   idle = (now - $last_run)
   age = (now - (args['ts'] || now))
-  tags = {:site => site}
 
   printf("Idle for %d seconds. Job age %d seconds.\n", idle, age)
 
   site = args['site']
+  tags = {:site => site}
 
   $idle_seconds.increment(tags, idle)
   $job_age.set(tags, age)
