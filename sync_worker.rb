@@ -4,7 +4,7 @@ require 'prometheus/client'
 require 'prometheus/client/push'
 include Stalker
 
-MAX_JOBS = 20
+MAX_JOBS = 100
 $num_jobs = 0
 $last_run = Time.now.to_f
 $child = nil
@@ -14,6 +14,7 @@ $idle_seconds = $prometheus.counter(:idle_seconds, 'Number of idle seconds betwe
 $job_age = $prometheus.gauge(:job_age_seconds, 'Age of current job')
 $synced_users = $prometheus.counter(:synchronized_users, 'Number of synchronized_users')
 $timeouts = $prometheus.counter(:timeouts, 'Number of timeouts')
+$processed_jobs = $prometheus.counter(:processed_jobs, 'Number of processed jobs')
 $pushgateway = Prometheus::Client::Push.new('sync-worker', ENV['WORKER_NAME'], ENV['PUSHGATEWAY_URL'] || 'http://pushgateway:9091')
 
 job 'intellitime.sync' do |args|
@@ -27,6 +28,8 @@ job 'intellitime.sync' do |args|
   tags = {:site => site}
 
   $idle_seconds.increment(tags, idle)
+  $timeouts.increment(tags, 0)
+  $processed_jobs.increment(tags)
   $job_age.set(tags, age)
 
   users = args['users'].join(',')
@@ -53,9 +56,11 @@ end
 
 error do |e, job, args|
   puts "Caught error, terminating child processes"
+  site = args['site']
+  tags = {:site => site}
 
   begin
-    $timeouts.increment()
+    $timeouts.increment(tags, 1)
     $pushgateway.add($prometheus)
   rescue StandardError => error
     puts error.inspect
