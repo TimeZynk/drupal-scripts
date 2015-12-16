@@ -4,8 +4,23 @@ require 'optparse'
 require 'beanstalk-client'
 require 'uri'
 require 'json'
+require 'prometheus/client'
+require 'prometheus/client/push'
 
 class Scanner
+  def initialize
+    begin
+      @prometheus = Prometheus::Client.registry
+      @scheduled_users = @prometheus.counter(
+        :users_scheduled_for_sync,
+        'A counter of users scheduled for sync'
+      )
+      @pushgateway = Prometheus::Client::Push.new('schedule-sync', nil, ENV['PUSHGATEWAY_URL'] || 'http://pushgateway:9091')
+    rescue StandardError => error
+      puts error.inspect
+    end
+  end
+
   def parse_options
     @options = {}
 
@@ -98,6 +113,14 @@ class Scanner
       delay,
       @options[:ttr]
     )
+
+    # Push to prometheus
+    begin
+      @scheduled_users.increment({:site => site}, users.length)
+      @pushgateway.add(@prometheus)
+    rescue StandardError => error
+      puts error.inspect
+    end
   end
 
 end

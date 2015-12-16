@@ -3,6 +3,8 @@
 require 'beanstalk-client'
 require 'uri'
 require 'optparse'
+require 'prometheus/client'
+require 'prometheus/client/push'
 
 options = {}
 
@@ -34,6 +36,20 @@ printf(
     stats["current-jobs-reserved"],
     stats["current-jobs-delayed"]
 )
+
+begin
+  prometheus = Prometheus::Client.registry
+  jobs_ready = prometheus.gauge(:current_jobs_ready)
+  jobs_reserved = prometheus.gauge(:current_jobs_reserved)
+  total_jobs = prometheus.gauge(:total_jobs)
+  jobs_ready.set({tube: 'intellitime.sync'}, stats["current-jobs-ready"])
+  jobs_reserved.set({tube: 'intellitime.sync'}, stats["current-jobs-reserved"])
+  total_jobs.set({tube: 'intellitime.sync'}, stats["total-jobs"])
+
+  Prometheus::Client::Push.new('beanstalk', nil, ENV['PUSHGATEWAY_URL'] || 'http://pushgateway:9091').add(prometheus)
+rescue StandardError => error
+  puts error.inspect
+end
 
 if stats["current-jobs-ready"] > options[:limit]
     printf(
