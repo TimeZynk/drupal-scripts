@@ -17,6 +17,7 @@ class Scanner
       )
       @pushgateway = Prometheus::Client::Push.new('schedule-sync', nil, ENV['PUSHGATEWAY_URL'] || 'http://pushgateway:9091')
     rescue StandardError => error
+      puts site + ': error initializing schedule_sync'
       puts error.inspect
     end
   end
@@ -74,6 +75,9 @@ class Scanner
       output.strip
     else
       puts site + ': error when running drush'
+      puts '------- BEGIN ERROR MESSAGE ' + site + ' -------'
+      puts output
+      puts '------- END ERROR MESSAGE ' + site + ' -------'
       false
     end
   end
@@ -119,6 +123,7 @@ class Scanner
       @scheduled_users.increment({:site => site}, users.length)
       @pushgateway.add(@prometheus)
     rescue StandardError => error
+      puts site + ': error pushing stats to prometheus'
       puts error.inspect
     end
   end

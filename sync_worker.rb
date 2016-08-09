@@ -41,6 +41,7 @@ job 'intellitime.sync' do |args|
   begin
     $pushgateway.add($prometheus)
   rescue StandardError => error
+    puts site + ': error when pushing stats to prometheus'
     puts error.inspect
   end
 
@@ -56,6 +57,7 @@ end
 
 error do |e, job, args|
   puts "Caught error, terminating child processes"
+  puts e.inspect
   site = args['site']
   tags = {:site => site}
 
